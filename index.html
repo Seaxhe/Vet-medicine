@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vet Pain & Anesthesia</title>
+
 <style>
 body {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -14,16 +15,16 @@ h1,h2 { text-align:center; }
   background:#020617; padding:14px; margin:12px 0; border-radius:12px;
 }
 label { display:block; margin-top:8px; }
-input, select, button {
+input, button {
   width:100%; padding:10px; margin-top:6px;
   border-radius:8px; border:none; font-size:16px;
 }
-button { background:#2563eb; color:white; margin-top:12px; }
-.result { margin-top:10px; font-weight:600; }
-.warn { color:#fb7185; }
+button { background:#2563eb; color:white; }
 .small { font-size:13px; opacity:0.8; }
+.result { margin-top:10px; font-weight:600; }
 .toggle { display:flex; gap:8px; }
 .toggle button { flex:1; }
+.settings { background:#020617; border:1px dashed #475569; }
 </style>
 </head>
 
@@ -34,89 +35,129 @@ button { background:#2563eb; color:white; margin-top:12px; }
 <div class="card">
   <label>Species</label>
   <div class="toggle">
-    <button onclick="species='dog';calc()">Dog</button>
-    <button onclick="species='cat';calc()">Cat</button>
+    <button onclick="setSpecies('dog')">Dog</button>
+    <button onclick="setSpecies('cat')">Cat</button>
   </div>
 
   <label>Weight (kg)</label>
   <input type="number" id="wt" step="0.1" oninput="calc()">
 </div>
 
+<div class="card settings">
+  <h2>⚙️ Concentrations (mg/mL)</h2>
+
+  <label>Buprenorphine</label>
+  <input type="number" id="c_bup" step="0.01">
+
+  <label>Methadone</label>
+  <input type="number" id="c_meth" step="0.1">
+
+  <label>Propofol</label>
+  <input type="number" id="c_prop" step="0.1">
+
+  <label>Ketamine</label>
+  <input type="number" id="c_ket" step="1">
+
+  <button onclick="resetConcentrations()">Reset to standard</button>
+</div>
+
 <div class="card">
 <h2>Buprenorphine</h2>
-<div class="small">0.01–0.02 mg/kg | 0.3 mg/mL</div>
+<div class="small">0.01–0.02 mg/kg</div>
 <div id="bup"></div>
 </div>
 
 <div class="card">
 <h2>Methadone</h2>
-<div class="small">Dog 0.2–0.5 mg/kg | Cat 0.1–0.3 mg/kg | 10 mg/mL</div>
+<div class="small">Dog 0.2–0.5 | Cat 0.1–0.3 mg/kg</div>
 <div id="meth"></div>
 </div>
 
 <div class="card">
 <h2>Propofol</h2>
-<div class="small">Dog 2–6 mg/kg | Cat 4–8 mg/kg | 10 mg/mL</div>
+<div class="small">Dog 2–6 | Cat 4–8 mg/kg</div>
 <div id="prop"></div>
 </div>
 
 <div class="card">
 <h2>Ketamine – Bolus</h2>
-<div class="small">Dog & Cat: 1–5 mg/kg | 100 mg/mL</div>
+<div class="small">1–5 mg/kg</div>
 <div id="ketBolus"></div>
 </div>
 
 <div class="card">
-<h2>Ketamine CRI</h2>
-<div class="small">0.1–0.6 mg/kg/hr | 100 mg/mL</div>
+<h2>Ketamine – CRI</h2>
+<div class="small">0.1–0.6 mg/kg/hr</div>
 <div id="ketCRI"></div>
 </div>
 
 <script>
 let species = "dog";
 
+const defaults = {
+  bup: 0.3,
+  meth: 10,
+  prop: 10,
+  ket: 100
+};
+
+function setSpecies(s){
+  species = s;
+  calc();
+}
+
+function resetConcentrations(){
+  document.getElementById("c_bup").value = defaults.bup;
+  document.getElementById("c_meth").value = defaults.meth;
+  document.getElementById("c_prop").value = defaults.prop;
+  document.getElementById("c_ket").value = defaults.ket;
+  calc();
+}
+
+resetConcentrations();
+
 function calc(){
   const wt = parseFloat(document.getElementById("wt").value);
   if(!wt || wt<=0) return;
 
+  const cB = parseFloat(c_bup.value);
+  const cM = parseFloat(c_meth.value);
+  const cP = parseFloat(c_prop.value);
+  const cK = parseFloat(c_ket.value);
+
   // Buprenorphine
-  let bLow = wt*0.01;
-  let bHigh = wt*0.02;
-  document.getElementById("bup").innerHTML =
-    `Dose: ${bLow.toFixed(2)}–${bHigh.toFixed(2)} mg<br>
-     Volume: ${(bLow/0.3).toFixed(2)}–${(bHigh/0.3).toFixed(2)} mL`;
+  let bL = wt*0.01, bH = wt*0.02;
+  bup.innerHTML =
+    `Dose: ${bL.toFixed(2)}–${bH.toFixed(2)} mg<br>
+     Volume: ${(bL/cB).toFixed(2)}–${(bH/cB).toFixed(2)} mL`;
 
   // Methadone
-  let mLow = species==="dog"?0.2:0.1;
-  let mHigh = species==="dog"?0.5:0.3;
-  let mdLow = wt*mLow;
-  let mdHigh = wt*mHigh;
-  document.getElementById("meth").innerHTML =
-    `Dose: ${mdLow.toFixed(2)}–${mdHigh.toFixed(2)} mg<br>
-     Volume: ${(mdLow/10).toFixed(2)}–${(mdHigh/10).toFixed(2)} mL`;
+  let mL = species==="dog"?0.2:0.1;
+  let mH = species==="dog"?0.5:0.3;
+  let mdL = wt*mL, mdH = wt*mH;
+  meth.innerHTML =
+    `Dose: ${mdL.toFixed(2)}–${mdH.toFixed(2)} mg<br>
+     Volume: ${(mdL/cM).toFixed(2)}–${(mdH/cM).toFixed(2)} mL`;
 
   // Propofol
-  let pLow = species==="dog"?2:4;
-  let pHigh = species==="dog"?6:8;
-  let pdLow = wt*pLow;
-  let pdHigh = wt*pHigh;
-  document.getElementById("prop").innerHTML =
-    `Dose: ${pdLow.toFixed(1)}–${pdHigh.toFixed(1)} mg<br>
-     Volume: ${(pdLow/10).toFixed(2)}–${(pdHigh/10).toFixed(2)} mL`;
+  let pL = species==="dog"?2:4;
+  let pH = species==="dog"?6:8;
+  let pdL = wt*pL, pdH = wt*pH;
+  prop.innerHTML =
+    `Dose: ${pdL.toFixed(1)}–${pdH.toFixed(1)} mg<br>
+     Volume: ${(pdL/cP).toFixed(2)}–${(pdH/cP).toFixed(2)} mL`;
 
   // Ketamine bolus
-  let kLow = wt*1;
-  let kHigh = wt*5;
-  document.getElementById("ketBolus").innerHTML =
-    `Dose: ${kLow.toFixed(1)}–${kHigh.toFixed(1)} mg<br>
-     Volume: ${(kLow/100).toFixed(2)}–${(kHigh/100).toFixed(2)} mL`;
+  let kL = wt*1, kH = wt*5;
+  ketBolus.innerHTML =
+    `Dose: ${kL.toFixed(1)}–${kH.toFixed(1)} mg<br>
+     Volume: ${(kL/cK).toFixed(2)}–${(kH/cK).toFixed(2)} mL`;
 
   // Ketamine CRI
-  let criLow = wt*0.1;
-  let criHigh = wt*0.6;
-  document.getElementById("ketCRI").innerHTML =
-    `CRI: ${criLow.toFixed(2)}–${criHigh.toFixed(2)} mg/hr<br>
-     Pump: ${(criLow/100).toFixed(2)}–${(criHigh/100).toFixed(2)} mL/hr`;
+  let criL = wt*0.1, criH = wt*0.6;
+  ketCRI.innerHTML =
+    `CRI: ${criL.toFixed(2)}–${criH.toFixed(2)} mg/hr<br>
+     Pump: ${(criL/cK).toFixed(2)}–${(criH/cK).toFixed(2)} mL/hr`;
 }
 </script>
 
