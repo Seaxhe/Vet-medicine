@@ -99,7 +99,7 @@ button {background:#2563eb;color:white;}
 
 <div class="card">
 <h2>Buprenorphine</h2>
-<div class="small">0.01–0.02 mg/kg (0.3 mg/mL)</div>
+<div class="small">0.01–0.02 mg/kg (0.5 mg/mL)</div>
 <div id="bup" class="result"></div>
 </div>
 
@@ -214,7 +214,7 @@ document.getElementById('prop').innerHTML=r(w*(species==='dog'?2:4),w*(species==
 document.getElementById('alf').innerHTML=r(w*(species==='dog'?1:2),w*(species==='dog'?3:5),10);
 document.getElementById('ketBolus').innerHTML=r(w*1,w*5,100);
 document.getElementById('ketCRI').innerHTML=r(w*0.1,w*0.6,100)+" / hr";
-document.getElementById('bup').innerHTML=r(w*0.01,w*0.02,0.3);
+document.getElementById('bup').innerHTML=r(w*0.01,w*0.02,0.5);
 document.getElementById('meth').innerHTML=r(w*(species==='dog'?0.2:0.1),w*(species==='dog'?0.5:0.3),10);
 document.getElementById('hydro').innerHTML=r(w*(species==='dog'?0.05:0.025),w*(species==='dog'?0.1:0.05),2);
 document.getElementById('gaba').innerHTML=`${(w*10).toFixed(0)}–${(w*20).toFixed(0)} mg PO`;
