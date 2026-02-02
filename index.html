@@ -3,34 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vet Pain & Anesthesia</title>
-
+<title>Vet ICU/ER Calculator</title>
 <style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background:#0f172a; color:#e5e7eb; margin:0; padding:16px;
-}
-h1,h2 { text-align:center; }
-.card {
-  background:#020617; padding:14px; margin:12px 0; border-radius:12px;
-}
-label { display:block; margin-top:8px; }
-input, button {
-  width:100%; padding:10px; margin-top:6px;
-  border-radius:8px; border:none; font-size:16px;
-}
-button { background:#2563eb; color:white; }
-.small { font-size:13px; opacity:0.8; }
-.result { margin-top:10px; font-weight:600; }
-.toggle { display:flex; gap:8px; }
-.toggle button { flex:1; }
-.settings { background:#020617; border:1px dashed #475569; }
+body {font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f172a;color:#e5e7eb;margin:0;padding:16px;}
+h1,h2 {text-align:center;}
+.card {background:#020617;padding:14px;margin:12px 0;border-radius:12px;}
+label {display:block;margin-top:8px;}
+input, select, button {width:100%;padding:10px;margin-top:6px;border-radius:8px;border:none;font-size:16px;}
+button {background:#2563eb;color:white;}
+.small {font-size:13px;opacity:0.8;}
+.result {margin-top:10px;font-weight:600;}
+.result .alert {color:#fb7185;font-weight:700;}
+.toggle {display:flex;gap:8px;}
+.toggle button {flex:1;}
+.settings {background:#020617;border:1px dashed #475569;padding:12px;border-radius:12px;}
+.tab {display:none;}
+.tab.active {display:block;}
+.nav {display:flex;gap:8px;margin-bottom:8px;}
+.nav button {flex:1;}
 </style>
 </head>
-
 <body>
 
-<h1>🐾 Pain & Anesthesia</h1>
+<h1>🐾 Vet ICU/ER Calculator</h1>
+
+<div class="nav">
+  <button onclick="showTab('pain')">Pain & Anesthesia</button>
+  <button onclick="showTab('fluids')">IV Fluids</button>
+  <button onclick="showTab('nutrition')">Nutrition</button>
+</div>
+
+<!-- ==================== PAIN & ANESTHESIA TAB ==================== -->
+<div class="tab active" id="pain">
 
 <div class="card">
   <label>Species</label>
@@ -38,128 +42,133 @@ button { background:#2563eb; color:white; }
     <button onclick="setSpecies('dog')">Dog</button>
     <button onclick="setSpecies('cat')">Cat</button>
   </div>
-
   <label>Weight (kg)</label>
-  <input type="number" id="wt" step="0.1" oninput="calc()">
+  <input type="number" id="wt" step="0.1" oninput="calcPain()">
 </div>
 
 <div class="card settings">
-  <h2>⚙️ Concentrations (mg/mL)</h2>
+<h2>⚙️ Editable Concentrations (mg/mL)</h2>
+<label>Buprenorphine</label><input type="number" id="c_bup" step="0.01">
+<label>Methadone</label><input type="number" id="c_meth" step="0.1">
+<label>Hydromorphone</label><input type="number" id="c_hydro" step="0.1">
+<label>Gabapentin</label><input type="number" id="c_gaba" step="1">
+<label>Propofol</label><input type="number" id="c_prop" step="0.1">
+<label>Ketamine</label><input type="number" id="c_ket" step="1">
+<label>Alfaxalone</label><input type="number" id="c_alf" step="0.1">
+<label>Dexmedetomidine</label><input type="number" id="c_dex" step="0.01">
+<label>Midazolam</label><input type="number" id="c_midz" step="0.1">
+<label>Butorphanol</label><input type="number" id="c_buto" step="0.1">
+<label>Carprofen</label><input type="number" id="c_car" step="0.1">
+<label>Meloxicam</label><input type="number" id="c_mel" step="0.01">
+<label>Robenacoxib</label><input type="number" id="c_robe" step="0.1">
+<button onclick="resetConcentrations()">Reset to defaults</button>
+</div>
 
-  <label>Buprenorphine</label>
-  <input type="number" id="c_bup" step="0.01">
+<div class="card"><h2>Buprenorphine</h2><div class="small">0.01–0.02 mg/kg</div><div id="bup" class="result"></div></div>
+<div class="card"><h2>Methadone</h2><div class="small">Dog 0.2–0.5 | Cat 0.1–0.3 mg/kg</div><div id="meth" class="result"></div></div>
+<div class="card"><h2>Hydromorphone</h2><div class="small">Dog 0.05–0.1 | Cat 0.025–0.05 mg/kg</div><div id="hydro" class="result"></div></div>
+<div class="card"><h2>Gabapentin</h2><div class="small">10–20 mg/kg</div><div id="gaba" class="result"></div></div>
+<div class="card"><h2>Propofol</h2><div class="small">Dog 2–6 | Cat 4–8 mg/kg</div><div id="prop" class="result"></div></div>
+<div class="card"><h2>Ketamine – Bolus</h2><div class="small">1–5 mg/kg</div><div id="ketBolus" class="result"></div></div>
+<div class="card"><h2>Ketamine – CRI</h2><div class="small">0.1–0.6 mg/kg/hr</div><div id="ketCRI" class="result"></div></div>
+<div class="card"><h2>Alfaxalone</h2><div class="small">Dog 1–3 | Cat 2–5 mg/kg</div><div id="alf" class="result"></div></div>
+<div class="card"><h2>Dexmedetomidine</h2><div class="small">Dog 1–5 µg/kg | Cat 5–10 µg/kg</div><div id="dex" class="result"></div></div>
+<div class="card"><h2>Midazolam</h2><div class="small">0.1–0.3 mg/kg</div><div id="midz" class="result"></div></div>
+<div class="card"><h2>Butorphanol</h2><div class="small">0.2–0.4 mg/kg</div><div id="buto" class="result"></div></div>
+<div class="card"><h2>Carprofen</h2><div class="small">4 mg/kg/day max | Dogs only</div><div id="car" class="result"></div></div>
+<div class="card"><h2>Meloxicam</h2><div class="small">Dog 0.2 | Cat 0.1 mg/kg | Max 0.2 (dog) 0.1(cat)</div><div id="mel" class="result"></div></div>
+<div class="card"><h2>Robenacoxib</h2><div class="small">1 mg/kg | Dogs only</div><div id="robe" class="result"></div></div>
 
-  <label>Methadone</label>
-  <input type="number" id="c_meth" step="0.1">
+</div>
 
-  <label>Propofol</label>
-  <input type="number" id="c_prop" step="0.1">
-
-  <label>Ketamine</label>
-  <input type="number" id="c_ket" step="1">
-
-  <button onclick="resetConcentrations()">Reset to standard</button>
+<!-- ==================== FLUIDS TAB ==================== -->
+<div class="tab" id="fluids">
+<div class="card">
+<label>Species</label>
+<div class="toggle">
+<button onclick="calcFluids('dog')">Dog</button>
+<button onclick="calcFluids('cat')">Cat</button>
+</div>
+<label>Weight (kg)</label>
+<input type="number" id="wt_fluid" step="0.1" oninput="calcFluids()">
+<label>% Dehydration</label>
+<input type="number" id="dehydration" step="0.1" value="0">
+<label>Ongoing losses (mL/hr)</label>
+<input type="number" id="ongoing" step="0.1" value="0">
 </div>
 
 <div class="card">
-<h2>Buprenorphine</h2>
-<div class="small">0.01–0.02 mg/kg</div>
-<div id="bup"></div>
+<h2>Fluid Calculations</h2>
+<div id="fluidResults" class="result"></div>
+</div>
+</div>
+
+<!-- ==================== NUTRITION TAB ==================== -->
+<div class="tab" id="nutrition">
+<div class="card">
+<label>Species</label>
+<div class="toggle">
+<button onclick="calcNutrition('dog')">Dog</button>
+<button onclick="calcNutrition('cat')">Cat</button>
+</div>
+<label>Weight (kg)</label>
+<input type="number" id="wt_nut" step="0.1" oninput="calcNutrition()">
+<label>Clinical Status</label>
+<select id="status" onchange="calcNutrition()">
+<option value="neutered">Neutered Adult</option>
+<option value="intact">Intact Adult</option>
+<option value="hospitalized">Hospitalized</option>
+<option value="critical">Critical Care</option>
+<option value="weightloss">Weight Loss</option>
+</select>
+<label>Meals per day</label>
+<input type="number" id="meals" step="1" value="2">
 </div>
 
 <div class="card">
-<h2>Methadone</h2>
-<div class="small">Dog 0.2–0.5 | Cat 0.1–0.3 mg/kg</div>
-<div id="meth"></div>
+<h2>Nutrition Calculations</h2>
+<div id="nutResults" class="result"></div>
 </div>
-
-<div class="card">
-<h2>Propofol</h2>
-<div class="small">Dog 2–6 | Cat 4–8 mg/kg</div>
-<div id="prop"></div>
-</div>
-
-<div class="card">
-<h2>Ketamine – Bolus</h2>
-<div class="small">1–5 mg/kg</div>
-<div id="ketBolus"></div>
-</div>
-
-<div class="card">
-<h2>Ketamine – CRI</h2>
-<div class="small">0.1–0.6 mg/kg/hr</div>
-<div id="ketCRI"></div>
 </div>
 
 <script>
-let species = "dog";
+// ================== TAB NAVIGATION ==================
+function showTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(tab).classList.add('active');}
 
-const defaults = {
-  bup: 0.3,
-  meth: 10,
-  prop: 10,
-  ket: 100
-};
-
-function setSpecies(s){
-  species = s;
-  calc();
-}
-
-function resetConcentrations(){
-  document.getElementById("c_bup").value = defaults.bup;
-  document.getElementById("c_meth").value = defaults.meth;
-  document.getElementById("c_prop").value = defaults.prop;
-  document.getElementById("c_ket").value = defaults.ket;
-  calc();
-}
-
+// ================== PAIN & ANESTHESIA ==================
+let species='dog';
+const defaults={bup:0.5,meth:10,hydro:2,gaba:50,prop:10,ket:100,alf:10,dex:0.5,midz:5,buto:10,car:50,mel:1,robe:10};
+const maxDose={bup:0.03,meth:{dog:0.5,cat:0.3},hydro:{dog:0.1,cat:0.05},gaba:30,prop:10,ket:5,alf:{dog:3,cat:5},dex:{dog:5,cat:10},midz:0.3,buto:0.4,car:{dog:4,cat:0},mel:{dog:0.2,cat:0.1},robe:{dog:1,cat:0}};
+function setSpecies(s){species=s;calcPain();}
+function resetConcentrations(){for(let k in defaults) document.getElementById('c_'+k).value=defaults[k];calcPain();}
 resetConcentrations();
 
-function calc(){
-  const wt = parseFloat(document.getElementById("wt").value);
-  if(!wt || wt<=0) return;
-
-  const cB = parseFloat(c_bup.value);
-  const cM = parseFloat(c_meth.value);
-  const cP = parseFloat(c_prop.value);
-  const cK = parseFloat(c_ket.value);
-
-  // Buprenorphine
-  let bL = wt*0.01, bH = wt*0.02;
-  bup.innerHTML =
-    `Dose: ${bL.toFixed(2)}–${bH.toFixed(2)} mg<br>
-     Volume: ${(bL/cB).toFixed(2)}–${(bH/cB).toFixed(2)} mL`;
-
-  // Methadone
-  let mL = species==="dog"?0.2:0.1;
-  let mH = species==="dog"?0.5:0.3;
-  let mdL = wt*mL, mdH = wt*mH;
-  meth.innerHTML =
-    `Dose: ${mdL.toFixed(2)}–${mdH.toFixed(2)} mg<br>
-     Volume: ${(mdL/cM).toFixed(2)}–${(mdH/cM).toFixed(2)} mL`;
-
-  // Propofol
-  let pL = species==="dog"?2:4;
-  let pH = species==="dog"?6:8;
-  let pdL = wt*pL, pdH = wt*pH;
-  prop.innerHTML =
-    `Dose: ${pdL.toFixed(1)}–${pdH.toFixed(1)} mg<br>
-     Volume: ${(pdL/cP).toFixed(2)}–${(pdH/cP).toFixed(2)} mL`;
-
-  // Ketamine bolus
-  let kL = wt*1, kH = wt*5;
-  ketBolus.innerHTML =
-    `Dose: ${kL.toFixed(1)}–${kH.toFixed(1)} mg<br>
-     Volume: ${(kL/cK).toFixed(2)}–${(kH/cK).toFixed(2)} mL`;
-
-  // Ketamine CRI
-  let criL = wt*0.1, criH = wt*0.6;
-  ketCRI.innerHTML =
-    `CRI: ${criL.toFixed(2)}–${criH.toFixed(2)} mg/hr<br>
-     Pump: ${(criL/cK).toFixed(2)}–${(criH/cK).toFixed(2)} mL/hr`;
+function calcPain(){
+  const wt=parseFloat(document.getElementById('wt').value); if(!wt || wt<=0) return;
+  const c={}; for(let k in defaults) c[k]=parseFloat(document.getElementById('c_'+k).value);
+  function show(id,dL,dH,maxD){let alert=''; if(typeof maxD==='object') maxD=maxD[species]; if(dH>maxD*wt) alert='<div class="alert">⚠️ Exceeds max dose!</div>'; document.getElementById(id).innerHTML=`Dose: ${dL.toFixed(2)}–${dH.toFixed(2)} mg<br>Volume: ${(dL/c[id.replace('Bolus','').replace('CRI','')]).toFixed(2)}–${(dH/c[id.replace('Bolus','').replace('CRI','')]).toFixed(2)} mL`+alert;}
+  show('bup',wt*0.01,wt*0.02,maxDose.bup);
+  show('meth',wt*(species==='dog'?0.2:0.1),wt*(species==='dog'?0.5:0.3),maxDose.meth);
+  show('hydro',wt*(species==='dog'?0.05:0.025),wt*(species==='dog'?0.1:0.05),maxDose.hydro);
+  show('gaba',wt*10,wt*20,maxDose.gaba);
+  show('prop',wt*(species==='dog'?2:4),wt*(species==='dog'?6:8),maxDose.prop);
+  show('ketBolus',wt*1,wt*5,maxDose.ket); show('ketCRI',wt*0.1,wt*0.6,maxDose.ket);
+  show('alf',wt*(species==='dog'?1:2),wt*(species==='dog'?3:5),maxDose.alf);
+  show('dex',wt*(species==='dog'?0.001:0.005),wt*(species==='dog'?0.005:0.01),maxDose.dex);
+  show('midz',wt*0.1,wt*0.3,maxDose.midz); show('buto',wt*0.2,wt*0.4,maxDose.buto);
+  if(species==='dog'){show('car',wt*4,wt*4,maxDose.car.dog);show('mel',wt*0.2,wt*0.2,maxDose.mel.dog);show('robe',wt*1,wt*1,maxDose.robe.dog);}
+  else{show('mel',wt*0.1,wt*0.1,maxDose.mel.cat);document.getElementById('car').innerHTML='<div class="alert">❌ Not for cats!</div>';document.getElementById('robe').innerHTML='<div class="alert">❌ Not for cats!</div>';}
 }
-</script>
 
+// ================== FLUIDS ==================
+let speciesF='dog';
+function calcFluids(s){if(s) speciesF=s; const wt=parseFloat(document.getElementById('wt_fluid').value); const d=parseFloat(document.getElementById('dehydration').value)||0; const o=parseFloat(document.getElementById('ongoing').value)||0; if(!wt||wt<=0) return; let maint=(speciesF==='dog'?50:45)*wt; let deficit=d*wt*10; let total=maint+deficit+(o*24); let rate=total/24; document.getElementById('fluidResults').innerHTML=`Maintenance: ${maint.toFixed(1)} mL/day<br>Deficit: ${deficit.toFixed(1)} mL<br>Ongoing losses: ${(o*24).toFixed(1)} mL<br>Total/day: ${total.toFixed(1)} mL<br>Rate: ${rate.toFixed(1)} mL/hr`;}
+
+// ================== NUTRITION ==================
+let speciesN='dog';
+function calcNutrition(s){if(s) speciesN=s; const wt=parseFloat(document.getElementById('wt_nut').value); const status=document.getElementById('status').value; const meals=parseFloat(document.getElementById('meals').value)||2; if(!wt||wt<=0) return; const RER=70*Math.pow(wt,0.75); let mult=1; switch(status){case'neutered':mult=1.6;break;case'intact':mult=1.8;break;case'hospitalized':mult=1.2;break;case'critical':mult=1.5;break;case'weightloss':mult=1;break;} const MER=RER*mult; const perMeal=MER/meals; document.getElementById('nutResults').innerHTML=`RER: ${RER.toFixed(1)} kcal/day<br>MER: ${MER.toFixed(1)} kcal/day<br>Per meal (${meals}): ${perMeal.toFixed(1)} kcal`;}
+
+
+</script>
 </body>
 </html>
