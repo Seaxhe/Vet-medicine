@@ -129,13 +129,13 @@ button {background:#2563eb;color:white;}
 
 <div class="card">
 <h2>Meloxicam</h2>
-<div class="small">Dog 0.2 | Cat 0.1 mg/kg</div>
+<div class="small">Dog 0.2 | Cat 0.1 mg/kg (5 mg/ml)</div>
 <div id="mel" class="result"></div>
 </div>
 
 <div class="card">
 <h2>Robenacoxib</h2>
-<div class="small">1 mg/kg – 2 mg/kg</div>
+<div class="small">1 mg/kg – 2 mg/kg (20 mg/mL)</div>
 <div id="robe" class="result"></div>
 </div>
 </div>
@@ -219,7 +219,7 @@ document.getElementById('meth').innerHTML=r(w*(species==='dog'?0.2:0.1),w*(speci
 document.getElementById('hydro').innerHTML=r(w*(species==='dog'?0.05:0.025),w*(species==='dog'?0.1:0.05),2);
 document.getElementById('gaba').innerHTML=`${(w*10).toFixed(0)}–${(w*20).toFixed(0)} mg PO`;
 document.getElementById('car').innerHTML=species==='dog'?`${(w*4).toFixed(1)} mg/day`:'❌ Cats';
-document.getElementById('mel').innerHTML=`${(w*(species==='dog'?0.2:0.1)).toFixed(2)} mg`;
+document.getElementById('mel').innerHTML=`${(w*(species==='dog'?0.2:0.1),5).toFixed(2)} mg`;
 document.getElementById('robe').innerHTML=r(w*1,w*2,20); 
 }
 
