@@ -135,7 +135,7 @@ button {background:#2563eb;color:white;}
 
 <div class="card">
 <h2>Robenacoxib</h2>
-<div class="small">1 mg/kg – dogs only</div>
+<div class="small">1 mg/kg – 2 mg/kg</div>
 <div id="robe" class="result"></div>
 </div>
 </div>
@@ -220,7 +220,7 @@ document.getElementById('hydro').innerHTML=r(w*(species==='dog'?0.05:0.025),w*(s
 document.getElementById('gaba').innerHTML=`${(w*10).toFixed(0)}–${(w*20).toFixed(0)} mg PO`;
 document.getElementById('car').innerHTML=species==='dog'?`${(w*4).toFixed(1)} mg/day`:'❌ Cats';
 document.getElementById('mel').innerHTML=`${(w*(species==='dog'?0.2:0.1)).toFixed(2)} mg`;
-document.getElementById('robe').innerHTML=species==='dog'?`${w.toFixed(2)} mg`:'❌ Cats';
+document.getElementById('robe').innerHTML=r(w*1,w*2,20); 
 }
 
 function calcFluids(s){
