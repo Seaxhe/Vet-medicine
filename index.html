@@ -219,7 +219,7 @@ document.getElementById('meth').innerHTML=r(w*(species==='dog'?0.2:0.1),w*(speci
 document.getElementById('hydro').innerHTML=r(w*(species==='dog'?0.05:0.025),w*(species==='dog'?0.1:0.05),2);
 document.getElementById('gaba').innerHTML=`${(w*10).toFixed(0)}–${(w*20).toFixed(0)} mg PO`;
 document.getElementById('car').innerHTML=species==='dog'?`${(w*4).toFixed(1)} mg/day`:'❌ Cats';
-document.getElementById('mel').innerHTML=`${(w*(species==='dog'?0.1)/5).toFixed(2)} ml | ${((w*(species==='dog'?0.2))/5).toFixed(2)} mL`;
+document.getElementById('mel').innerHTML=`${(w*(species==='dog'?0.1:0.2)/5).toFixed(2)} ml`;
 document.getElementById('robe').innerHTML=r(w*1,w*2,20); 
 }
 
